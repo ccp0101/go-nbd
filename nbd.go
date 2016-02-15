@@ -60,7 +60,7 @@ func ioctl(a1, a2, a3 uintptr) (err error) {
 type Device interface {
 	ReadAt(b []byte, off int64) (n int, err error)
 	WriteAt(b []byte, off int64) (n int, err error)
-	Flush() (n int, err error)
+	Sync() error
 }
 
 type request struct {
@@ -214,7 +214,7 @@ func (nbd *NBD) handle() {
 			case NBD_CMD_DISC:
 				panic("Disconnect")
 			case NBD_CMD_FLUSH:
-				nbd.device.Flush()
+				nbd.device.Sync()
 				binary.BigEndian.PutUint32(buf[0:4], NBD_REPLY_MAGIC)
 				binary.BigEndian.PutUint32(buf[4:8], 1)
 				syscall.Write(nbd.socket, buf[0:16])
